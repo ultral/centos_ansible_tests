@@ -5,16 +5,14 @@ LABEL maintainer="Lev Goncharov" \
 
 MAINTAINER Lev Goncharov <lev@goncharov.xyz>
 
-RUN . && \
-    yum makecache fast && \
+RUN yum makecache fast && \
     yum clean all && \
     yum install -y python sudo yum-plugin-ovl bash && \
     sed -i 's/plugins=0/plugins=1/g' /etc/yum.conf && \
     yum clean all;
 
 
-RUN . && \
-    yum makecache fast && \
+RUN yum makecache fast && \
     yum clean all && \
     yum install -y zip unzip wget python-lxml rsync && \
     sed -i 's/plugins=0/plugins=1/g' /etc/yum.conf && \
