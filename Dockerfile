@@ -3,17 +3,34 @@ LABEL maintainer="Lev Goncharov" \
       description="A docker image for running Ansible roles tests" \
       repo="https://github.com/ultral/centos_ansible_tests"
 
-MAINTAINER Lev Goncharov <lev@goncharov.xyz>
-
-RUN yum makecache fast && \
+RUN set -e; \
     yum clean all && \
-    yum install -y python sudo yum-plugin-ovl bash && \
-    sed -i 's/plugins=0/plugins=1/g' /etc/yum.conf && \
-    yum clean all;
+    yum install -y python sudo bash dnf zip unzip wget rsync && \
+    yum clean all
 
+# these steps required for proper systemd work inside the container
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+    rm -f /lib/systemd/system/multi-user.target.wants/*;\
+    rm -f /etc/systemd/system/*.wants/*;\
+    rm -f /lib/systemd/system/local-fs.target.wants/*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+    rm -f /lib/systemd/system/basic.target.wants/*;\
+    rm -f /lib/systemd/system/anaconda.target.wants/*;
 
-RUN yum makecache fast && \
-    yum clean all && \
-    yum install -y zip unzip wget python-lxml rsync && \
-    sed -i 's/plugins=0/plugins=1/g' /etc/yum.conf && \
-    yum clean all;
+RUN set -e; \
+    dnf -y install initscripts systemd-sysv redhat-lsb-core sudo bash iproute yum-plugin-ovl && \
+    dnf clean all && \
+    rm -rf /var/cache/yum && \
+    touch /etc/sysconfig/network && \    
+    localedef -f UTF-8 -i en_US en_US.UTF-8
+
+RUN cp /bin/true /sbin/agetty
+
+STOPSIGNAL SIGRTMIN+3
+
+VOLUME [ "/sys/fs/cgroup" ]
+
+ENTRYPOINT ["/usr/sbin/init"]
+
+USER root
