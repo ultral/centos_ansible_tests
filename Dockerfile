@@ -1,11 +1,11 @@
-FROM centos:7
+FROM centos:8
 LABEL maintainer="Lev Goncharov" \
       description="A docker image for running Ansible roles tests" \
       repo="https://github.com/ultral/centos_ansible_tests"
 
 RUN set -e; \
     yum clean all && \
-    yum install -y python sudo bash dnf zip unzip wget rsync && \
+    yum install -y python3 sudo bash dnf zip unzip wget rsync && \
     yum clean all
 
 # these steps required for proper systemd work inside the container
@@ -19,11 +19,10 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == system
     rm -f /lib/systemd/system/anaconda.target.wants/*;
 
 RUN set -e; \
-    dnf -y install initscripts systemd-sysv redhat-lsb-core sudo bash iproute yum-plugin-ovl && \
+    dnf -y install initscripts systemd-sysv redhat-lsb-core sudo bash iproute glibc-langpack-en && \
     dnf clean all && \
     rm -rf /var/cache/yum && \
-    touch /etc/sysconfig/network && \    
-    localedef -f UTF-8 -i en_US en_US.UTF-8
+    touch /etc/sysconfig/network
 
 RUN cp /bin/true /sbin/agetty
 
